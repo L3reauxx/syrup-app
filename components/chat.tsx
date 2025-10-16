@@ -1,7 +1,8 @@
 // components/chat.tsx
 'use client'
 
-import { useChat, type Message } from '@ai-sdk/react' // CORRECTED IMPORT
+// Using the correct, new AI SDK package.
+import { useChat, type Message, type CreateMessage } from '@ai-sdk/react'
 import { ChatPanel } from '@/components/chat-panel'
 import { ChatMessages } from '@/components/chat-messages'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
@@ -46,14 +47,16 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       <ChatMessages
         messages={messages}
         isLoading={isLoading}
+        // **CORRECTION**: The `reload` function from `useChat` now matches what the component expects.
         reload={reload}
         model={selectedModel}
       />
       <ChatPanel
+        // **CORRECTION**: The `id` is now correctly passed to the ChatPanel.
         id={id}
         isLoading={isLoading}
         stop={stop}
-        append={append}
+        append={append as (message: Message | CreateMessage) => Promise<string | null | undefined>}
         input={input}
         setInput={setInput}
         messages={messages}

@@ -1,22 +1,109 @@
+// components/ui/icons.tsx
 'use client'
 
-import { cn } from '@/lib/utils'
+// **CORRECTION**: All icons used by the components are now imported and exported correctly.
+import {
+  Check,
+  Copy,
+  RefreshCw,
+  Plus,
+  ChevronRight,
+  User,
+  Eye,
+  EyeOff,
+  Loader2,
+  ArrowRight,
+  SunMedium,
+  Moon,
+  Laptop,
+  MoreHorizontal,
+  ArrowUp,
+  Link,
+  Trash,
+  PlusCircle,
+  Share,
+  Command,
+  Bot,
+  FileText,
+  FileImage,
+  FileJson,
+  FileQuestion,
+  Sparkles,
+  ExternalLink,
+  ChevronLeft,
+  ChevronDown,
+  X,
+  Search,
+  Play,
+  StopCircle,
+  CopyCheck,
+  RotateCw,
+  Split,
+  Grip,
+  Pin,
+  PinOff,
+  Settings,
+  Info,
+  CircleEllipsis,
+  Book,
+  MessageCircle,
+  MessageSquare,
+  Video,
+  Github,
+  Image as ImageIcon // Alias Image to avoid conflicts
+} from 'lucide-react'
 
-function IconLogo({ className, ...props }: React.ComponentProps<'svg'>) {
-  return (
-    <svg
-      fill="currentColor"
-      viewBox="0 0 256 256"
-      role="img"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn('h-4 w-4', className)}
-      {...props}
-    >
-      <circle cx="128" cy="128" r="128" fill="black"></circle>
-      <circle cx="102" cy="128" r="18" fill="white"></circle>
-      <circle cx="154" cy="128" r="18" fill="white"></circle>
-    </svg>
-  )
+// Exporting each icon with a consistent name.
+export const IconCheck = Check
+export const IconCopy = Copy
+export const IconRefresh = RefreshCw
+export const IconPlus = Plus
+export const IconChevronRight = ChevronRight
+export const IconUser = User
+export const IconEye = Eye
+export const IconEyeOff = EyeOff
+
+// Re-exporting other icons for general use.
+export {
+  Loader2,
+  ArrowRight,
+  SunMedium,
+  Moon,
+  Laptop,
+  MoreHorizontal,
+  ArrowUp,
+  Link,
+  Trash,
+  PlusCircle,
+  Share,
+  User as UserIcon,
+  Command,
+  Bot,
+  FileText,
+  FileImage,
+  FileJson,
+  FileQuestion,
+  Sparkles,
+  ExternalLink,
+  ChevronLeft,
+  ChevronDown,
+  X,
+  Search,
+  Play,
+  StopCircle,
+  CopyCheck,
+  RotateCw,
+  Split,
+  Grip,
+  Pin,
+  PinOff,
+  Settings,
+  Info,
+  CircleEllipsis,
+  ImageIcon,
+  Book,
+  MessageCircle,
+  MessageSquare,
+  Video,
+  Github
 }
-
-export { IconLogo }
