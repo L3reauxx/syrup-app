@@ -1,96 +1,50 @@
-import type { Metadata, Viewport } from 'next'
-import { Inter as FontSans } from 'next/font/google'
-
-import { Analytics } from '@vercel/analytics/next'
-
-import { createClient } from '@/lib/supabase/server'
+// app/layout.tsx
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import '@/app/globals.css'
 import { cn } from '@/lib/utils'
-
-import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
-
-import AppSidebar from '@/components/app-sidebar'
-import ArtifactRoot from '@/components/artifact/artifact-root'
-import Header from '@/components/header'
+import { Analytics } from '@vercel/analytics/react' // Corrected import
 import { ThemeProvider } from '@/components/theme-provider'
+import { Header } from '@/components/header'
+import { AuthProvider } from '@/context/AuthContext' // Our Auth Provider
 
-import './globals.css'
-
-const fontSans = FontSans({
-  subsets: ['latin'],
-  variable: '--font-sans'
-})
-
-const title = 'Morphic'
-const description =
-  'A fully open-source AI-powered answer engine with a generative UI.'
-
-export const metadata: Metadata = {
-  metadataBase: new URL('https://morphic.sh'),
-  title,
-  description,
-  openGraph: {
-    title,
-    description
-  },
-  twitter: {
-    title,
-    description,
-    card: 'summary_large_image',
-    creator: '@miiura'
-  }
+export const metadata = {
+  title: 'Syrup',
+  description: 'AI-powered growth for musicians.'
 }
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
-  let user = null
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (supabaseUrl && supabaseAnonKey) {
-    const supabase = await createClient()
-    const {
-      data: { user: supabaseUser }
-    } = await supabase.auth.getUser()
-    user = supabaseUser
-  }
-
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          'min-h-screen flex flex-col font-sans antialiased',
-          fontSans.variable
+          'font-sans antialiased',
+          GeistSans.variable,
+          GeistMono.variable
         )}
       >
+        <Toaster position="top-center" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider defaultOpen>
-            <AppSidebar />
-            <div className="flex flex-col flex-1">
-              <Header user={user} />
-              <main className="flex flex-1 min-h-0">
-                <ArtifactRoot>{children}</ArtifactRoot>
+          <div className="flex flex-col min-h-screen">
+            <AuthProvider> {/* Wrap with AuthProvider */}
+              <Header />
+              <main className="flex flex-col flex-1 bg-muted/50">
+                {children}
               </main>
-            </div>
-          </SidebarProvider>
-          <Toaster />
-          <Analytics />
+            </AuthProvider>
+          </div>
         </ThemeProvider>
+        <Analytics /> {/* Add the Analytics component */}
       </body>
     </html>
   )
