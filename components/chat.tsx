@@ -1,7 +1,7 @@
 // components/chat.tsx
 'use client'
 
-import { useChat, type Message } from 'ai/react' // <-- THIS LINE IS NOW CORRECT
+import { useChat, type Message } from '@ai-sdk/react' // CORRECTED IMPORT
 import { ChatPanel } from '@/components/chat-panel'
 import { ChatMessages } from '@/components/chat-messages'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
@@ -18,7 +18,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   const router = useRouter()
   const path = usePathname()
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
-  const [selectedModel, setSelectedModel] = useState<string>('gemini-pro') // Defaulting to our model
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-pro')
 
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({

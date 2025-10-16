@@ -1,60 +1,50 @@
+// components/message-actions.tsx
 'use client'
-
-import { useChat } from '@ai-sdk/react'
-import { Copy } from 'lucide-react'
+import { memo } from 'react'
+import { type Message } from '@ai-sdk/react' // CORRECTED IMPORT
 import { toast } from 'sonner'
+import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard'
+import { Button } from '@/components/ui/button'
+import { IconCheck, IconCopy, IconRefresh } from '@/components/ui/icons'
 
-import { cn } from '@/lib/utils'
-
-import { Button } from './ui/button'
-import { ChatShare } from './chat-share'
-import { RetryButton } from './retry-button'
-
-interface MessageActionsProps {
-  message: string
-  messageId: string
-  reload?: () => Promise<string | null | undefined>
-  chatId: string
-  enableShare?: boolean
-  className?: string
+interface MessageActionsProps extends React.ComponentProps<'div'> {
+  message: Message
+  reload?: () => void
 }
 
-export function MessageActions({
+function MessageActions({
   message,
-  messageId,
   reload,
-  chatId,
-  enableShare,
-  className
+  className,
+  ...props
 }: MessageActionsProps) {
-  const { status } = useChat({
-    id: chatId
+  const { copy, isCopied } = useCopyToClipboard({
+    onCopy: () => {
+      toast.success('Message copied to clipboard')
+    }
   })
-  const isLoading = status === 'submitted' || status === 'streaming'
-
-  async function handleCopy() {
-    await navigator.clipboard.writeText(message)
-    toast.success('Message copied to clipboard')
-  }
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-0.5 self-end transition-opacity duration-200',
-        isLoading ? 'opacity-0' : 'opacity-100',
-        className
+    <div className={'flex items-center md:gap-4'}>
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => copy(message.content)}
+        >
+          {isCopied ? <IconCheck /> : <IconCopy />}
+          <span className="sr-only">Copy message</span>
+        </Button>
+      </div>
+      {message.role === 'assistant' && reload && (
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={reload}>
+          <IconRefresh />
+          <span className="sr-only">Reload message</span>
+        </Button>
       )}
-    >
-      {reload && <RetryButton reload={reload} messageId={messageId} />}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleCopy}
-        className="rounded-full"
-      >
-        <Copy size={14} />
-      </Button>
-      {enableShare && chatId && <ChatShare chatId={chatId} />}
     </div>
   )
 }
+
+export default memo(MessageActions)
