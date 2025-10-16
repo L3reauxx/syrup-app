@@ -1,40 +1,31 @@
+// components/header.tsx
 'use client'
 
-// import Link from 'next/link' // No longer needed directly here for Sign In button
-import React from 'react'
-
-import { User } from '@supabase/supabase-js'
-
 import { cn } from '@/lib/utils'
+import { UserMenu } from '@/components/user-menu'
+import { GuestMenu } from '@/components/guest-menu'
+// **FIX**: We import `useAuth` to get the current user's state directly within this component.
+import { useAuth } from '@/context/AuthContext'
+import type { User } from 'firebase/auth'
 
-import { useSidebar } from '@/components/ui/sidebar'
+// **FIX**: The HeaderProps no longer requires a 'user' prop, as it gets it from the context.
+interface HeaderProps extends React.ComponentProps<'header'> {}
 
-// import { Button } from './ui/button' // No longer needed directly here for Sign In button
-import GuestMenu from './guest-menu' // Import the new GuestMenu component
-import UserMenu from './user-menu'
+export function Header({ className }: HeaderProps) {
+  const { user } = useAuth() // Get the user from our global Auth Context.
 
-interface HeaderProps {
-  user: User | null
-}
-
-export const Header: React.FC<HeaderProps> = ({ user }) => {
-  const { open } = useSidebar()
   return (
     <header
       className={cn(
-        'absolute top-0 right-0 p-2 flex justify-between items-center z-10 backdrop-blur lg:backdrop-blur-none bg-background/80 lg:bg-transparent transition-[width] duration-200 ease-linear',
-        open ? 'md:w-[calc(100%-var(--sidebar-width))]' : 'md:w-full',
-        'w-full'
+        'flex h-16 w-full items-center justify-between bg-background px-4',
+        className
       )}
     >
-      {/* This div can be used for a logo or title on the left if needed */}
-      <div></div>
-
-      <div className="flex items-center gap-2">
-        {user ? <UserMenu user={user} /> : <GuestMenu />}
+      <div className="flex items-center">
+        <h1 className="font-bold text-xl">Syrup</h1>
       </div>
+      {/* Conditionally render the UserMenu or GuestMenu based on the auth state. */}
+      <div>{user ? <UserMenu user={user as User} /> : <GuestMenu />}</div>
     </header>
   )
 }
-
-export default Header

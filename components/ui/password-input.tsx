@@ -5,7 +5,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-// **CORRECTION**: `InputProps` is now correctly imported as a type.
+// **FIX**: `InputProps` is now correctly imported as a `type` from the input component file.
 import type { InputProps } from '@/components/ui/input'
 import { IconEye, IconEyeOff } from '@/components/ui/icons'
 

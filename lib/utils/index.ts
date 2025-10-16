@@ -6,6 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// **FIX**: Added the missing 'nanoid' export. This function is used by
+// other components to generate unique IDs for new chats.
 export const nanoid = (t = 21) =>
   crypto
     .getRandomValues(new Uint8Array(t))

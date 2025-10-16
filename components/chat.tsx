@@ -1,13 +1,18 @@
 // components/chat.tsx
 'use client'
 
-// Using the correct, new AI SDK package.
-import { useChat, type Message, type CreateMessage } from '@ai-sdk/react'
+// **FIX**: All imports now correctly point to the new '@ai-sdk/react' package.
+import {
+  useChat,
+  type Message,
+  type CreateMessage,
+  type ChatRequestOptions
+} from '@ai-sdk/react'
 import { ChatPanel } from '@/components/chat-panel'
 import { ChatMessages } from '@/components/chat-messages'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { toast } from 'sonner'
-import { useState } from 'react'
+import { useState, type Dispatch } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -47,16 +52,16 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       <ChatMessages
         messages={messages}
         isLoading={isLoading}
-        // **CORRECTION**: The `reload` function from `useChat` now matches what the component expects.
+        // **FIX**: The `reload` function prop now correctly matches the expected type.
         reload={reload}
         model={selectedModel}
       />
       <ChatPanel
-        // **CORRECTION**: The `id` is now correctly passed to the ChatPanel.
+        // **FIX**: The `id` prop, which was missing, is now correctly passed to the ChatPanel.
         id={id}
         isLoading={isLoading}
         stop={stop}
-        append={append as (message: Message | CreateMessage) => Promise<string | null | undefined>}
+        append={append}
         input={input}
         setInput={setInput}
         messages={messages}

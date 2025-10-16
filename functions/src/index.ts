@@ -62,9 +62,14 @@ const PAYSTACK_WEBHOOK_SECRET = functions.config().paystack.webhook_secret;
  * Creates a Paystack Checkout session for a user.
  * This is called by the frontend when a user clicks a "Subscribe" button.
  */
+// functions/src/index.ts
+
+// I will provide only the corrected function for brevity.
+// The rest of your functions/src/index.ts file remains the same.
+
+// Find the initializePaystackTransaction function and replace it with this version:
 export const initializePaystackTransaction = functions.https.onCall(
   async (data, context) => {
-    // First, check if the user is actually logged in.
     if (!context.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
@@ -76,24 +81,29 @@ export const initializePaystackTransaction = functions.https.onCall(
     const userEmail = context.auth.token.email;
     const { planCode, successUrl, cancelUrl } = data;
 
+    // **FIX**: Ensure userEmail is not undefined before calling Paystack.
+    // This resolves the "string | undefined is not assignable to string" error.
+    if (!userEmail) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "User email is not available."
+      );
+    }
+
     try {
-      // Ask the Paystack API to create a new payment link.
       const response = await paystack.transaction.initialize({
-        email: userEmail,
-        plan: planCode, // The specific plan the user chose (e.g., "Ignite").
+        email: userEmail, // Now guaranteed to be a string.
+        plan: planCode,
         callback_url: successUrl,
         metadata: {
-          firebaseUID: userId, // We include the user's ID to track the payment.
+          firebaseUID: userId,
           cancel_action: cancelUrl,
         },
       });
 
-      // **CORRECTION**: Check that Paystack actually sent back data.
       if (response.data) {
-        // Send the unique payment URL back to the frontend.
         return { url: response.data.authorization_url };
       }
-      // If no data, throw an error to prevent a crash.
       throw new Error("Paystack response data is null.");
     } catch (error) {
       console.error("Paystack initialization failed:", error);
@@ -104,6 +114,10 @@ export const initializePaystackTransaction = functions.https.onCall(
     }
   }
 );
+
+// **NOTE**: The other warnings in this file about unused variables
+// ('VIBERATE_API_KEY' and 'userDoc') are harmless and will not stop the build.
+// We can clean them up later.
 
 /**
  * Listens for notifications from Paystack about subscription events.

@@ -4,10 +4,10 @@ import { GeistMono } from 'geist/font/mono'
 import '@/app/globals.css'
 import { cn } from '@/lib/utils'
 import { Toaster } from '@/components/ui/sonner'
-import { Analytics } from '@vercel/analytics/react' // Corrected import
+import { Analytics } from '@vercel/analytics/react'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
-import { AuthProvider } from '@/context/AuthContext' // Our Auth Provider
+import { AuthProvider } from '@/context/AuthContext'
 
 export const metadata = {
   title: 'Syrup',
@@ -36,7 +36,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen">
-            <AuthProvider> {/* Wrap with AuthProvider */}
+            <AuthProvider>
+              {/* **FIX**: The Header component is now correctly placed inside the AuthProvider
+                  and no longer needs a 'user' prop, which fixed the error. */}
               <Header />
               <main className="flex flex-col flex-1 bg-muted/50">
                 {children}
@@ -44,7 +46,7 @@ export default function RootLayout({
             </AuthProvider>
           </div>
         </ThemeProvider>
-        <Analytics /> {/* Add the Analytics component */}
+        <Analytics />
       </body>
     </html>
   )
