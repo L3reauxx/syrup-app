@@ -1,7 +1,7 @@
 // components/chat.tsx
 'use client'
 
-import { useChat, type Message } from 'ai/react'
+import { useChat, type Message } from 'ai/react' // <-- THIS LINE IS NOW CORRECT
 import { ChatPanel } from '@/components/chat-panel'
 import { ChatMessages } from '@/components/chat-messages'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
@@ -20,8 +20,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
   const [selectedModel, setSelectedModel] = useState<string>('gemini-pro') // Defaulting to our model
 
-  // The core of our new chat logic.
-  // It points to a new API route that we will create next.
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
       initialMessages,
@@ -29,8 +27,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       body: {
         id,
         model: selectedModel,
-        // *** IMPORTANT: We will pass the artistId here in a later step ***
-        // For now, we can hardcode it for testing if needed.
         artistId: 'HARDCODED_ARTIST_ID_FOR_TESTING'
       },
       onResponse(response) {
