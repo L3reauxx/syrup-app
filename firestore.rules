@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only read and update their own profile.
+    // Creation is handled by the onUserCreate backend function.
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if false; // Disallow client-side creation
+    }
+
+    // Tiers are public-readable but admin-writable only.
+    match /tiers/{tierId} {
+      allow read: if true;
+      allow write: if false; // To be managed via Firebase Console or admin scripts
+    }
+
+    // A user can manage their own list of tracked artists.
+    match /user_permissions/{userId}/tracked_artists/{artistId} {
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // A user can only read analytics data for an artist if they are tracking them.
+    function hasPermission(artistId) {
+      return exists(/databases/$(database)/documents/user_permissions/$(request.auth.uid)/tracked_artists/$(artistId));
+    }
+
+    match /artist_analytics/{artistId}/{subcollection}/{dataId} {
+      allow read: if request.auth != null && hasPermission(artistId);
+      allow write: if false; // Data is written by backend functions only
+    }
+
+    // Users can read and write to their own conversations and messages.
+    match /conversations/{convoId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    match /conversations/{convoId}/messages/{messageId} {
+       allow read, write: if request.auth != null && get(/databases/$(database)/documents/conversations/$(convoId)).data.userId == request.auth.uid;
+    }
+  }
+}
