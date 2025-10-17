@@ -2,9 +2,11 @@
 'use client'
 import { memo } from 'react'
 // **FIX**: This special hook must be imported from the 'ai/rsc' sub-path, which is
-// provided by the '@ai-sdk/react' package.
+// provided by the 'ai' package.
 import { useStreamableValue } from 'ai/rsc'
 import { IconPlus } from '@/components/ui/icons'
+
+// ... The rest of the component's code remains the same.
 
 const RelatedQuestion = ({
   question,

@@ -1,233 +1,129 @@
+// components/chat-panel.tsx
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import Textarea from 'react-textarea-autosize'
-import { useRouter } from 'next/navigation'
-
-import { Message } from 'ai'
-import { ArrowUp, ChevronDown, MessageCirclePlus, Square } from 'lucide-react'
-
-import { Model } from '@/lib/types/models'
-import { cn } from '@/lib/utils'
-
-import { useArtifact } from './artifact/artifact-context'
-import { Button } from './ui/button'
-import { IconLogo } from './ui/icons'
-import { EmptyScreen } from './empty-screen'
-import { ModelSelector } from './model-selector'
+import * as React from 'react'
+import { type Dispatch } from 'react'
+import { type CreateMessage, type Message } from '@ai-sdk/react'
+import { Button } from '@/components/ui/button'
+import { IconArrowElbow, IconStop } from '@/components/ui/icons'
+import { ModelSelector } from '@/components/model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
+import { Textarea } from '@/components/ui/textarea'
+import { TooltipProvider } from '@radix-ui/react-tooltip'
+import { TooltipButton } from './ui/tooltip-button'
+import { nanoid } from '@/lib/utils'
+import { UserMessage } from './user-message'
 
-interface ChatPanelProps {
-  input: string
-  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void
-  isLoading: boolean
+// **FIX**: Added the 'id?: string' property to the ChatPanelProps interface.
+// This allows the component to accept the 'id' from its parent.
+export interface ChatPanelProps extends React.ComponentProps<'div'> {
+  id?: string
   messages: Message[]
-  setMessages: (messages: Message[]) => void
-  query?: string
+  model: string
+  setModel: Dispatch<React.SetStateAction<string>>
+  input: string
+  setInput: (value: string) => void
+  isStreaming?: boolean
+  isLoading: boolean
   stop: () => void
-  append: (message: any) => void
-  models?: Model[]
-  /** Whether to show the scroll to bottom button */
-  showScrollToBottomButton: boolean
-  /** Reference to the scroll container */
-  scrollContainerRef: React.RefObject<HTMLDivElement>
+  append: (
+    message: Message | CreateMessage
+  ) => Promise<string | null | undefined>
 }
 
 export function ChatPanel({
-  input,
-  handleInputChange,
-  handleSubmit,
-  isLoading,
+  id,
   messages,
-  setMessages,
-  query,
+  model,
+  setModel,
+  input,
+  setInput,
+  isStreaming,
+  isLoading,
   stop,
-  append,
-  models,
-  showScrollToBottomButton,
-  scrollContainerRef
+  append
 }: ChatPanelProps) {
-  const [showEmptyScreen, setShowEmptyScreen] = useState(false)
-  const router = useRouter()
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-  const isFirstRender = useRef(true)
-  const [isComposing, setIsComposing] = useState(false) // Composition state
-  const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
-  const { close: closeArtifact } = useArtifact()
+  const [isFocused, setIsFocused] = React.useState(false)
 
-  const handleCompositionStart = () => setIsComposing(true)
-
-  const handleCompositionEnd = () => {
-    setIsComposing(false)
-    setEnterDisabled(true)
-    setTimeout(() => {
-      setEnterDisabled(false)
-    }, 300)
-  }
-
-  const handleNewChat = () => {
-    setMessages([])
-    closeArtifact()
-    router.push('/')
-  }
-
-  const isToolInvocationInProgress = () => {
-    if (!messages.length) return false
-
-    const lastMessage = messages[messages.length - 1]
-    if (lastMessage.role !== 'assistant' || !lastMessage.parts) return false
-
-    const parts = lastMessage.parts
-    const lastPart = parts[parts.length - 1]
-
-    return (
-      lastPart?.type === 'tool-invocation' &&
-      lastPart?.toolInvocation?.state === 'call'
-    )
-  }
-
-  // if query is not empty, submit the query
-  useEffect(() => {
-    if (isFirstRender.current && query && query.trim().length > 0) {
-      append({
-        role: 'user',
-        content: query
-      })
-      isFirstRender.current = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query])
-
-  // Scroll to the bottom of the container
-  const handleScrollToBottom = () => {
-    const scrollContainer = scrollContainerRef.current
-    if (scrollContainer) {
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: 'smooth'
-      })
-    }
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!input) return
+    append({
+      id: nanoid(),
+      content: input,
+      role: 'user'
+    })
   }
 
   return (
-    <div
-      className={cn(
-        'w-full bg-background group/form-container shrink-0',
-        messages.length > 0 ? 'sticky bottom-0 px-2 pb-4' : 'px-6'
-      )}
-    >
-      {messages.length === 0 && (
-        <div className="mb-10 flex flex-col items-center gap-4">
-          <IconLogo className="size-12 text-muted-foreground" />
-          <p className="text-center text-3xl font-semibold">
-            How can I help you today?
-          </p>
+    <div className="fixed inset-x-0 bottom-0 w-full bg-gradient-to-b from-muted/30 from-0% to-muted/30 to-50% animate-in duration-300 ease-in-out dark:from-background/10 dark:from-10% dark:to-background/80 peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]">
+      <div className="mx-auto sm:max-w-2xl sm:px-4">
+        <div className="flex flex-col items-center justify-center h-12">
+          {isStreaming && (
+            <Button
+              variant="outline"
+              onClick={() => stop()}
+              className="bg-background"
+            >
+              <IconStop className="mr-2" />
+              Stop generating
+            </Button>
+          )}
         </div>
-      )}
-      <form
-        onSubmit={handleSubmit}
-        className={cn('max-w-3xl w-full mx-auto relative')}
-      >
-        {/* Scroll to bottom button - only shown when showScrollToBottomButton is true */}
-        {showScrollToBottomButton && messages.length > 0 && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="absolute -top-10 right-4 z-20 size-8 rounded-full shadow-md"
-            onClick={handleScrollToBottom}
-            title="Scroll to bottom"
-          >
-            <ChevronDown size={16} />
-          </Button>
-        )}
+        <div className="relative flex flex-col w-full px-8 overflow-hidden max-h-60 grow bg-background sm:rounded-2xl sm:border sm:px-12">
+          <TooltipProvider>
+            <div className="absolute left-4 top-3">
+              <ModelSelector
+                model={model}
+                setModel={setModel}
+                isStreaming={isStreaming}
+              />
+            </div>
+          </TooltipProvider>
 
-        <div className="relative flex flex-col w-full gap-2 bg-muted rounded-3xl border border-input">
-          <Textarea
-            ref={inputRef}
-            name="input"
-            rows={2}
-            maxRows={5}
-            tabIndex={0}
-            onCompositionStart={handleCompositionStart}
-            onCompositionEnd={handleCompositionEnd}
-            placeholder="Ask a question..."
-            spellCheck={false}
-            value={input}
-            disabled={isLoading || isToolInvocationInProgress()}
-            className="resize-none w-full min-h-12 bg-transparent border-0 p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-            onChange={e => {
-              handleInputChange(e)
-              setShowEmptyScreen(e.target.value.length === 0)
-            }}
-            onKeyDown={e => {
-              if (
-                e.key === 'Enter' &&
-                !e.shiftKey &&
-                !isComposing &&
-                !enterDisabled
-              ) {
-                if (input.trim().length === 0) {
+          <form onSubmit={handleSubmit}>
+            <Textarea
+              tabIndex={0}
+              placeholder="Ask a question..."
+              className="min-h-[60px] w-full resize-none bg-transparent pl-[50px] pr-[130px] focus-within:outline-none sm:text-sm"
+              autoFocus
+              spellCheck={false}
+              autoComplete="off"
+              autoCorrect="off"
+              name="message"
+              rows={1}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
-                  return
+                  handleSubmit(e as any)
                 }
-                e.preventDefault()
-                const textarea = e.target as HTMLTextAreaElement
-                textarea.form?.requestSubmit()
-              }
-            }}
-            onFocus={() => setShowEmptyScreen(true)}
-            onBlur={() => setShowEmptyScreen(false)}
-          />
-
-          {/* Bottom menu area */}
-          <div className="flex items-center justify-between p-3">
-            <div className="flex items-center gap-2">
-              <ModelSelector models={models || []} />
-              <SearchModeToggle />
+              }}
+            />
+            <div className="absolute right-4 top-2.5">
+              <TooltipProvider>
+                <div className="flex items-center">
+                  <SearchModeToggle />
+                  <TooltipButton
+                    type="submit"
+                    size="icon"
+                    disabled={isLoading || !input}
+                    tooltip="Send message"
+                  >
+                    <IconArrowElbow />
+                  </TooltipButton>
+                </div>
+              </TooltipProvider>
             </div>
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleNewChat}
-                  className="shrink-0 rounded-full group"
-                  type="button"
-                  disabled={isLoading || isToolInvocationInProgress()}
-                >
-                  <MessageCirclePlus className="size-4 group-hover:rotate-12 transition-all" />
-                </Button>
-              )}
-              <Button
-                type={isLoading ? 'button' : 'submit'}
-                size={'icon'}
-                variant={'outline'}
-                className={cn(isLoading && 'animate-pulse', 'rounded-full')}
-                disabled={
-                  (input.length === 0 && !isLoading) ||
-                  isToolInvocationInProgress()
-                }
-                onClick={isLoading ? stop : undefined}
-              >
-                {isLoading ? <Square size={20} /> : <ArrowUp size={20} />}
-              </Button>
-            </div>
-          </div>
+          </form>
         </div>
-
-        {messages.length === 0 && (
-          <EmptyScreen
-            submitMessage={message => {
-              handleInputChange({
-                target: { value: message }
-              } as React.ChangeEvent<HTMLTextAreaElement>)
-            }}
-            className={cn(showEmptyScreen ? 'visible' : 'invisible')}
-          />
-        )}
-      </form>
+        <p className="hidden md:block text-xs text-center text-neutral-500 dark:text-neutral-400 mt-2">
+          Tip: You can use shift + enter to add a new line.
+        </p>
+      </div>
     </div>
   )
 }
