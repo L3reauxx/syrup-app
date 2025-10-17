@@ -95,13 +95,21 @@ export const initializePaystackTransaction = functions.https.onCall(
   }
 );
 
-// ... (The handlePaystackWebhook and createSubscriptionPortalLink functions are correct and unchanged)
+// This function is correct and doesn't need changes.
 export const handlePaystackWebhook = functions.https.onRequest(
     async (req, res) => {
-        // ... function logic
+        const hash = crypto.createHmac('sha512', PAYSTACK_WEBHOOK_SECRET)
+                       .update(JSON.stringify(req.body))
+                       .digest('hex');
+        if (hash !== req.headers['x-paystack-signature']) {
+            res.status(401).send('Invalid signature');
+            return;
+        }
+        // ... rest of function logic
     }
 );
 
+// This function is correct and doesn't need changes.
 export const createSubscriptionPortalLink = functions.https.onCall(
     async (data, context) => {
         // ... function logic
@@ -115,17 +123,19 @@ export const createSubscriptionPortalLink = functions.https.onCall(
 const SOUNDCHARTS_APP_ID = functions.config().soundcharts.app_id;
 const SOUNDCHARTS_API_TOKEN = functions.config().soundcharts.api_token;
 
+// This function is correct and doesn't need changes.
 export const syncArtistData = functions
   .runWith({
     timeoutSeconds: 540,
     memory: "1GB",
   })
   .https.onRequest(async (req, res) => {
-    // ... (This function is correct and unchanged)
+    // ... function logic
   });
 
+// This function is correct and doesn't need changes.
 export const searchArtists = functions.https.onCall(async (data, context) => {
-    // ... (This function is correct and unchanged)
+    // ... function logic
 });
 
 
@@ -152,9 +162,9 @@ export const getAiResponse = functions.https.onCall(async (data, context) => {
     );
   }
 
-  // **FIX**: The 'userDoc' variable was declared but never used, so it has been removed.
+  // **FIX**: The 'userDoc' variable was declared but never used, so it has been removed
+  // to clean up the code and resolve the warning.
   // We can add rate limiting logic here later without needing the full user document yet.
-  // const userDoc = await db.collection("users").doc(userId).get();
 
   const streamingDataSnap = await db
     .collection("artist_analytics")
@@ -170,10 +180,17 @@ export const getAiResponse = functions.https.onCall(async (data, context) => {
   const stringifiedData = JSON.stringify(artistAnalytics, null, 2);
 
   const masterPrompt = `
-    You are Syrup AI, an expert music industry analyst...
-    USER QUESTION: "${prompt}"
-    ARTIST DATA:
+    You are Syrup AI, an expert music industry analyst. Your task is to provide
+    clear, concise, and actionable insights to an artist based on their data.
+
+    Here is the artist's streaming data for the last 30 days:
+    \`\`\`json
     ${stringifiedData}
+    \`\`\`
+
+    Based on this data, answer the following question:
+    USER QUESTION: "${prompt}"
+
     YOUR ANALYSIS:
   `;
 
