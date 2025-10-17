@@ -1,6 +1,7 @@
 // components/chat-messages.tsx
 'use client'
 
+// **FIX**: 'ChatRequestOptions' is now correctly imported as a 'type'.
 import { type Message, type ChatRequestOptions } from '@ai-sdk/react'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
@@ -10,7 +11,7 @@ export interface ChatMessagesProps {
   messages: Message[]
   isLoading: boolean
   // **FIX**: Updated the 'reload' function's type to match what the useChat hook provides.
-  // The hook provides a function that doesn't require a messageId.
+  // The hook provides a function that doesn't require a 'messageId'.
   reload: (
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>
@@ -38,7 +39,7 @@ export function ChatMessages({
         <div key={message.id}>
           <RenderMessage
             message={message}
-            isLast={index === messages.length - 1}
+            // **FIX**: The 'isLast' prop was removed as it is no longer used by RenderMessage.
             isLoading={isLoading}
             reload={reload}
             model={model}
