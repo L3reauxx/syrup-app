@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import '@/app/globals.css'
 import { cn } from '@/lib/utils'
 import { Toaster } from '@/components/ui/sonner'
+// **CORRECTION**: The import path is now correct for the analytics package.
 import { Analytics } from '@vercel/analytics/react'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
@@ -37,8 +38,6 @@ export default function RootLayout({
         >
           <div className="flex flex-col min-h-screen">
             <AuthProvider>
-              {/* **FIX**: The Header component is now correctly placed inside the AuthProvider
-                  and no longer needs a 'user' prop, which fixed the error. */}
               <Header />
               <main className="flex flex-col flex-1 bg-muted/50">
                 {children}
