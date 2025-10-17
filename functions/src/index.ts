@@ -58,16 +58,6 @@ export const onUserCreate = functions.auth.user().onCreate(async (user) => {
 const paystack = new Paystack(functions.config().paystack.secret);
 const PAYSTACK_WEBHOOK_SECRET = functions.config().paystack.webhook_secret;
 
-/**
- * Creates a Paystack Checkout session for a user.
- * This is called by the frontend when a user clicks a "Subscribe" button.
- */
-// functions/src/index.ts
-
-// I will provide only the corrected function for brevity.
-// The rest of your functions/src/index.ts file remains the same.
-
-// Find the initializePaystackTransaction function and replace it with this version:
 export const initializePaystackTransaction = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {
@@ -82,7 +72,6 @@ export const initializePaystackTransaction = functions.https.onCall(
     const { planCode, successUrl, cancelUrl } = data;
 
     // **FIX**: Ensure userEmail is not undefined before calling Paystack.
-    // This resolves the "string | undefined is not assignable to string" error.
     if (!userEmail) {
       throw new functions.https.HttpsError(
         "failed-precondition",
@@ -92,7 +81,7 @@ export const initializePaystackTransaction = functions.https.onCall(
 
     try {
       const response = await paystack.transaction.initialize({
-        email: userEmail, // Now guaranteed to be a string.
+        email: userEmail,
         plan: planCode,
         callback_url: successUrl,
         metadata: {
@@ -114,6 +103,11 @@ export const initializePaystackTransaction = functions.https.onCall(
     }
   }
 );
+
+// ... (handlePaystackWebhook and other functions are correct and unchanged)
+
+// **NOTE**: The other warnings in this file about unused variables are harmless
+// and will not stop the build. We can clean them up later.
 
 // **NOTE**: The other warnings in this file about unused variables
 // ('VIBERATE_API_KEY' and 'userDoc') are harmless and will not stop the build.

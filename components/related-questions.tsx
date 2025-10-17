@@ -1,7 +1,8 @@
 // components/related-questions.tsx
 'use client'
 import { memo } from 'react'
-// **CORRECTION**: This special hook must be imported from the 'ai/rsc' sub-path.
+// **FIX**: This special hook must be imported from the 'ai/rsc' sub-path, which is
+// provided by the '@ai-sdk/react' package.
 import { useStreamableValue } from 'ai/rsc'
 import { IconPlus } from '@/components/ui/icons'
 

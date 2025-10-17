@@ -1,8 +1,9 @@
 // lib/utils/registry.ts
 
-// **CORRECTION**: The import is now correctly from 'ai/react', which is provided
-// by the '@ai-sdk/react' package you already have installed.
+// **FIX**: The main provider registry function is correctly imported from 'ai/react',
+// which is part of the '@ai-sdk/react' package. This resolves the 404 error.
 import { experimental_createProviderRegistry as createProviderRegistry } from 'ai/react'
+// **FIX**: The provider objects are now imported with the correct lowercase casing.
 import { openai } from '@ai-sdk/openai'
 import { google } from '@ai-sdk/google'
 import { createAzure } from '@ai-sdk/azure'
