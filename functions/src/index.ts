@@ -58,6 +58,7 @@ export const onUserCreate = functions.auth.user().onCreate(async (user) => {
 const paystack = new Paystack(functions.config().paystack.secret);
 const PAYSTACK_WEBHOOK_SECRET = functions.config().paystack.webhook_secret;
 
+// Find the initializePaystackTransaction function and replace it with this version:
 export const initializePaystackTransaction = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {
@@ -71,18 +72,20 @@ export const initializePaystackTransaction = functions.https.onCall(
     const userEmail = context.auth.token.email;
     const { planCode, successUrl, cancelUrl } = data;
 
-    // **FIX**: Ensure userEmail is not undefined before calling Paystack.
     if (!userEmail) {
       throw new functions.https.HttpsError(
         "failed-precondition",
         "User email is not available."
       );
     }
-
+    
     try {
+      // **FIX**: The Paystack SDK requires an 'amount' field, even when using a plan.
+      // The plan's amount will override this, so we can safely set it to 0.
       const response = await paystack.transaction.initialize({
         email: userEmail,
         plan: planCode,
+        amount: 0, // This satisfies the type requirement.
         callback_url: successUrl,
         metadata: {
           firebaseUID: userId,
@@ -103,6 +106,9 @@ export const initializePaystackTransaction = functions.https.onCall(
     }
   }
 );
+
+// **NOTE**: The other warnings in this file about unused variables are harmless
+// and will not stop the build. We can clean them up later.
 
 // ... (handlePaystackWebhook and other functions are correct and unchanged)
 

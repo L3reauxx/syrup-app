@@ -2,6 +2,7 @@
 'use client'
 
 // **FIX**: All imports now correctly point to the new '@ai-sdk/react' package.
+// **FIX**: 'ChatRequestOptions' is now correctly imported as a 'type'.
 import {
   useChat,
   type Message,
